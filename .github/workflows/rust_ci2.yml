@@ -28,5 +28,5 @@ jobs:
           args: --release --target=${{ matrix.target }}
       - run: |
           ls -al
-          cd .github/workflows/
+          cd target/
           ls -al

@@ -26,7 +26,11 @@ jobs:
           use-cross: true
           command: build
           args: --release --target=${{ matrix.target }}
-      - run: |
-          ls -al
-          cd target/${{ matrix.target }}/release/
-          ls -al
+      # - run: |
+      #     ls -al
+      #     cd target/${{ matrix.target }}/release/
+      #     ls -al
+      - uses: actions/upload-artifact@v2
+        with:
+          name: build-${{ matrix.target }}
+          path: target/${{ matrix.target }}/release/rust_try_cd

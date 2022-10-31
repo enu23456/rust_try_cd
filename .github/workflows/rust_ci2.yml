@@ -28,5 +28,5 @@ jobs:
           args: --release --target=${{ matrix.target }}
       - run: |
           ls -al
-          cd target/
+          cd target/${{ matrix.target }}/release/
           ls -al

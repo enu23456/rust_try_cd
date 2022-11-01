@@ -84,3 +84,33 @@ jobs:
         with:
           name: draft-release
           path: release_upload_url.txt
+
+  attach-assets-to-release:
+    strategy:
+      matrix:
+        target:
+          - armv7-unknown-linux-gnueabihf
+          # - powerpc64-unknown-linux-gnu
+    needs: [build, draft-release]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v1
+        with:
+          name: draft-release
+      - id: upload-url
+        run: |
+          echo "::set-output name=url::$(cat draft-release/release_upload_url.txt)"
+      - uses: actions/download-artifact@v1
+        with:
+          name: build-${{ matrix.target }}
+          path: build/
+      - name: zip the artifact
+        run: zip -j build/main.zip build/rust_try_cd
+      - uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.upload-url.outputs.url }}
+          asset_path: ./build/rust_try_cd.zip
+          asset_name: rust_try_cd-${{ matrix.target }}.zip
+          asset_content_type: application/zip

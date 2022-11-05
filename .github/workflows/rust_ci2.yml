@@ -110,7 +110,9 @@ jobs:
           # - target: x86_64-apple-darwin
           #   os: macos-latest
     needs: [build, draft-release]
-    runs-on: ubuntu-latest
+    # runs-on: ubuntu-latest
+    # runs-on: $｛｛ matrix.os ｝｝
+    runs-on: windows-latest
     steps:
       - uses: actions/download-artifact@v1
         with:
@@ -123,7 +125,9 @@ jobs:
           name: build-${{ matrix.target }}
           path: build/
       - name: zip the artifact
-        run: zip -j build/rust_try_cd.zip build/rust_try_cd
+        # run: zip -j build/rust_try_cd.zip build/rust_try_cd
+        run: powershell Compress-Archive -Path target/$｛｛ matrix.target ｝｝/release/rc.exe -DestinationPath rc-$｛｛ matrix.target ｝｝.zip
+
       - uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -16,19 +16,22 @@ jobs:
           - x86_64-pc-windows-msvc
           # - x86_64-apple-darwin
         include:
-          # - target: x86_64-unknown-linux-musl
-          #   os: ubuntu-latest
+          - target: x86_64-unknown-linux-musl
+            os: ubuntu-latest
           - target: x86_64-pc-windows-msvc
             os: windows-latest
-          # - target: x86_64-apple-darwin
-          #   os: macos-latest
+          - target: x86_64-apple-darwin
+            os: macos-latest
     runs-on: ${{ matrix.os }}
-    # runs-on: $｛｛ matrix.os ｝｝  # これは認識されず上手くRunしなかった。要確認＆ブログ
-    # runs-on: windows-latest
     steps:
       - name: Setup code
         uses: actions/checkout@v2
-      
+
+      - name: Install musl tools
+        if : matrix.target == 'x86_64-unknown-linux-musl'
+        run: |
+          sudo apt install -qq -y musl-tools --no-install-recommends
+          
       - name: Setup Rust toolchain
         uses: actions-rs/toolchain@v1
         with:
@@ -43,16 +46,35 @@ jobs:
           use-cross: true
           command: build
           args: --release --target=${{ matrix.target }}
-          
-      - name: Check Directory
-        if: matrix.target == 'x86_64-pc-windows-msvc'
-        run: |
-          dir
-          cd target/${{ matrix.target }}/release/
-          dir
+      #     
+      # - name: Check Directory
+      #   if: matrix.target == 'x86_64-pc-windows-msvc'
+      #   run: |
+      #     dir
+      #     cd target/${{ matrix.target }}/release/
+      #     dir
       
+      - name: Package for linux-musl
+        if: matrix.target == 'x86_64-unknown-linux-musl'
+        run: |
+          zip --junk-paths rust_try_cd-${{ matrix.target }} target/${{ matrix.target }}/release/rust_try_cd
+
       - name: Package for windows
         if: matrix.target == 'x86_64-pc-windows-msvc'
         run: |
           powershell Compress-Archive -Path target/${{ matrix.target }}/release/rust_try_cd.exe -DestinationPath rust_try_cd-${{ matrix.target }}.zip
 
+      - name: Package for macOS
+        if: matrix.target == 'x86_64-apple-darwin'
+        run: |
+          zip --junk-paths rust_try_cd-${{ matrix.target }} target/${{ matrix.target }}/release/rust_try_cd
+          
+      - name: Check Directory
+        if: matrix.target == 'x86_64-pc-windows-msvc'
+        run: |
+          dir
+          
+      - uses: actions/upload-artifact@v2
+        with:
+          name: build-${{ matrix.target }}
+          path: rust_try_cd-${{ matrix.target }}.zip

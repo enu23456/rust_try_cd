@@ -23,7 +23,7 @@ jobs:
           # - target: x86_64-apple-darwin
           #   os: macos-latest
     runs-on: ${{ matrix.os }}
-    # runs-on: $｛｛ matrix.os ｝｝
+    # runs-on: $｛｛ matrix.os ｝｝  # これは認識されず上手くRunしなかった。要確認＆ブログ
     # runs-on: windows-latest
     steps:
       - uses: actions/checkout@v2
@@ -111,9 +111,9 @@ jobs:
           # - target: x86_64-apple-darwin
           #   os: macos-latest
     needs: [build, draft-release]
-    # runs-on: ubuntu-latest
+    runs-on: ubuntu-latest
     # runs-on: $｛｛ matrix.os ｝｝
-    runs-on: windows-latest
+    # runs-on: windows-latest
     steps:
       - uses: actions/download-artifact@v1
         with:
@@ -126,8 +126,9 @@ jobs:
           name: build-${{ matrix.target }}
           path: build/
       - name: zip the artifact
-        # run: zip -j build/rust_try_cd.zip build/rust_try_cd
-        run: powershell Compress-Archive -Path target/$｛｛ matrix.target ｝｝/release/rc.exe -DestinationPath rc-$｛｛ matrix.target ｝｝.zip
+        run: zip -j build/rust_try_cd.zip build/rust_try_cd
+        # run: powershell Compress-Archive -Path target/$｛｛ matrix.target ｝｝/release/rc.exe -DestinationPath rc-$｛｛ matrix.target ｝｝.zip
+        # run: powershell Compress-Archive -Path target/$｛｛ matrix.target ｝｝/release/rust_try_cd.exe -DestinationPath rust_try_cd.zip
 
       - uses: actions/upload-release-asset@v1
         env:

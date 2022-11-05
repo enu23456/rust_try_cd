@@ -26,18 +26,33 @@ jobs:
     # runs-on: $｛｛ matrix.os ｝｝  # これは認識されず上手くRunしなかった。要確認＆ブログ
     # runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
+      - name: Setup code
+        uses: actions/checkout@v2
+      
+      - name: Setup Rust toolchain
+        uses: actions-rs/toolchain@v1
         with:
+          profile: minimal
           toolchain: stable
           target: ${{ matrix.target }}
           override: true
-      - uses: actions-rs/cargo@v1
+          
+      - name: Build
+        uses: actions-rs/cargo@v1
         with:
           use-cross: true
           command: build
           args: --release --target=${{ matrix.target }}
-      - run: |
+          
+      - name: Check Directory
+        if: matrix.target == 'x86_64-pc-windows-msvc'
+        run: |
           dir
           cd target/${{ matrix.target }}/release/
           dir
+      
+      - name: Package for windows
+        if: matrix.target == 'x86_64-pc-windows-msvc'
+        run: |
+          powershell Compress-Archive -Path target/${{ matrix.target }}/release/rust_try_cd.exe -DestinationPath rust_try_cd-${{ matrix.target }}.zip
+

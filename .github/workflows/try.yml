@@ -38,6 +38,6 @@ jobs:
           command: build
           args: --release --target=${{ matrix.target }}
       - run: |
-          ls -al
+          dir
           cd target/${{ matrix.target }}/release/
-          ls -al
+          dir

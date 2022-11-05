@@ -49,13 +49,12 @@ jobs:
           use-cross: true
           command: build
           args: --release --target=${{ matrix.target }}
-      #     
-      # - name: Check Directory
-      #   if: matrix.target == 'x86_64-pc-windows-msvc'
-      #   run: |
-      #     dir
-      #     cd target/${{ matrix.target }}/release/
-      #     dir
+          
+      - name: Check Directory for windows
+        if: matrix.target == 'x86_64-pc-windows-msvc'
+        run: |
+          dir .
+          dir target/${{ matrix.target }}/release/
       
       - name: Package for linux-musl
         if: matrix.target == 'x86_64-unknown-linux-musl'
@@ -72,10 +71,11 @@ jobs:
         run: |
           zip --junk-paths rust_try_cd-${{ matrix.target }} target/${{ matrix.target }}/release/rust_try_cd
           
-      - name: Check Directory
+      - name: Check Directory for windows
         if: matrix.target == 'x86_64-pc-windows-msvc'
         run: |
-          dir
+          dir .
+          dir target/${{ matrix.target }}/release/
           
       - uses: actions/upload-artifact@v2
         with:

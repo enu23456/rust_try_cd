@@ -9,12 +9,13 @@ name: try_Build
 jobs:
   build:
     name: Build
+    
     strategy:
       matrix:
         target:
-          # - x86_64-unknown-linux-musl
+          - x86_64-unknown-linux-musl
           - x86_64-pc-windows-msvc
-          # - x86_64-apple-darwin
+          - x86_64-apple-darwin
         include:
           - target: x86_64-unknown-linux-musl
             os: ubuntu-latest
@@ -22,7 +23,9 @@ jobs:
             os: windows-latest
           - target: x86_64-apple-darwin
             os: macos-latest
+            
     runs-on: ${{ matrix.os }}
+    
     steps:
       - name: Setup code
         uses: actions/checkout@v2

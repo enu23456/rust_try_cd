@@ -12,19 +12,13 @@ jobs:
     strategy:
       matrix:
         target:
-          # - x86_64-unknown-linux-musl
           - x86_64-pc-windows-msvc
-          # - x86_64-apple-darwin
         include:
-          # - target: x86_64-unknown-linux-musl
-          #   os: ubuntu-latest
           - target: x86_64-pc-windows-msvc
             os: windows-latest
-          # - target: x86_64-apple-darwin
-          #   os: macos-latest
+            
     runs-on: ${{ matrix.os }}
-    # runs-on: $｛｛ matrix.os ｝｝  # これは認識されず上手くRunしなかった。要確認＆ブログ
-    # runs-on: windows-latest
+    
     steps:
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
@@ -37,14 +31,16 @@ jobs:
           use-cross: true
           command: build
           args: --release --target=${{ matrix.target }}
-      # - run: |
-      #     ls -al
-      #     cd target/${{ matrix.target }}/release/
-      #     ls -al
+          
+      - name: Package for windows
+        if: matrix.target == 'x86_64-pc-windows-msvc'
+        run: |
+          powershell Compress-Archive -Path target/${{ matrix.target }}/release/rust_try_cd.exe -DestinationPath rust_try_cd-${{ matrix.target }}.zip
+
       - uses: actions/upload-artifact@v2
         with:
           name: build-${{ matrix.target }}
-          path: target/${{ matrix.target }}/release/rust_try_cd
+          path: rust_try_cd-${{ matrix.target }}.zip
 
   draft-release:
     name: Release Draft
@@ -100,41 +96,31 @@ jobs:
     strategy:
       matrix:
         target:
-          # - x86_64-unknown-linux-musl
           - x86_64-pc-windows-msvc
-          # - x86_64-apple-darwin
-        include:
-          # - target: x86_64-unknown-linux-musl
-          #   os: ubuntu-latest
-          - target: x86_64-pc-windows-msvc
-            os: windows-latest
-          # - target: x86_64-apple-darwin
-          #   os: macos-latest
+          
     needs: [build, draft-release]
+    
     runs-on: ubuntu-latest
-    # runs-on: $｛｛ matrix.os ｝｝
-    # runs-on: windows-latest
+    
     steps:
       - uses: actions/download-artifact@v1
         with:
           name: draft-release
+          
       - id: upload-url
         run: |
           echo "::set-output name=url::$(cat draft-release/release_upload_url.txt)"
+          
       - uses: actions/download-artifact@v1
         with:
           name: build-${{ matrix.target }}
-          path: build/
-      - name: zip the artifact
-        run: zip -j build/rust_try_cd.zip build/rust_try_cd
-        # run: powershell Compress-Archive -Path target/$｛｛ matrix.target ｝｝/release/rc.exe -DestinationPath rc-$｛｛ matrix.target ｝｝.zip
-        # run: powershell Compress-Archive -Path target/$｛｛ matrix.target ｝｝/release/rust_try_cd.exe -DestinationPath rust_try_cd.zip
 
       - uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.upload-url.outputs.url }}
-          asset_path: ./build/rust_try_cd.zip
+          asset_path: ./build-${{ matrix.target }}/rust_try_cd-${{ matrix.target }}.zip
+          # asset_path: ./build/rust_try_cd.zip
           asset_name: rust_try_cd-${{ matrix.target }}.zip
           asset_content_type: application/zip

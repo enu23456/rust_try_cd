@@ -97,11 +97,13 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ github.ref }}_${{ steps.version.outputs.text }}
-          release_name: Release ${{ github.ref }}_${{ steps.version.outputs.text }}
-          body: |
-            ## Changelog
-            - [ ]
+          # tag_name: ${{ github.ref }}_${{ steps.version.outputs.text }}
+          # release_name: Release ${{ github.ref }}_${{ steps.version.outputs.text }}
+          tag_name: ${{ steps.version.outputs.text }}
+          release_name: Release ${{ steps.version.outputs.text }}
+          # body: |
+          #   ## Changelog
+          #   - [ ]
           draft: true
           prerelease: false
           

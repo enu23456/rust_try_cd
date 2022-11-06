@@ -89,26 +89,26 @@ jobs:
           
       - name: Set current time
         id: version
-        run: echo "::set-output name=text::ver$(TZ=Asia/Tokyo date +%y%m%d%H%M)"
-        # run: echo "::set-output name=text::v1-$(TZ=Asia/Tokyo date +%Y%m%d-%H%M%S)"
+        run: echo "::set-output name=text::v$(TZ=Asia/Tokyo date +%y%m%d%H%M)"
+        
       - name: Create a draft release
         uses: actions/create-release@v1
         id: createDraftRelease
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ steps.version.outputs.text }}  # 一通りをまず完成させるために変更
-          # tag_name: ${{ needs.build.outputs.version }}
-          release_name: ${{ steps.version.outputs.text }}
-          # release_name: ${{ needs.build.outputs.version }}  # 一通りをまず完成させるために変更
-          # body: |
-          #   ## Changelog
-          #   - [ ]
+          tag_name: ${{ github.ref }}_${{ steps.version.outputs.text }}
+          release_name: Release ${{ github.ref }}_${{ steps.version.outputs.text }}
+          body: |
+            ## Changelog
+            - [ ]
           draft: true
           prerelease: false
+          
       - name: Save upload url of this draft release.
         run: |
           echo '${{ steps.createDraftRelease.outputs.upload_url }}' > release_upload_url.txt
+          
       - name: Upload `release_upload_url.txt`
         uses: actions/upload-artifact@v1
         env:
@@ -148,6 +148,5 @@ jobs:
         with:
           upload_url: ${{ steps.upload-url.outputs.url }}
           asset_path: ./build-${{ matrix.target }}/rust_try_cd-${{ matrix.target }}.zip
-          # asset_path: ./build/rust_try_cd.zip
           asset_name: rust_try_cd-${{ matrix.target }}.zip
           asset_content_type: application/zip

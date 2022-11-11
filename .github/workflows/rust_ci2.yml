@@ -56,7 +56,7 @@ jobs:
       - name: Package for windows
         if: matrix.target == 'x86_64-pc-windows-msvc'
         run: |
-          powershell Compress-Archive -Path target/${{ matrix.target }}/release/$env:NAMEPROJECT_NAME.exe -DestinationPath $env:NAMEPROJECT_NAME-${{ matrix.target }}.zip
+          powershell Compress-Archive -Path target/${{ matrix.target }}/release/$env:PROJECT_NAME.exe -DestinationPath $env:PROJECT_NAME-${{ matrix.target }}.zip
       - name: Package for macOS
         if: matrix.target == 'x86_64-apple-darwin'
         run: |

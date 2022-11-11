@@ -52,20 +52,20 @@ jobs:
       - name: Package for linux-musl
         if: matrix.target == 'x86_64-unknown-linux-musl'
         run: |
-          zip --junk-paths ${{ PROJECT_NAME }}-${{ matrix.target }} target/${{ matrix.target }}/release/${{ PROJECT_NAME }}
+          zip --junk-paths $PROJECT_NAME-${{ matrix.target }} target/${{ matrix.target }}/release/$PROJECT_NAME
       - name: Package for windows
         if: matrix.target == 'x86_64-pc-windows-msvc'
         run: |
-          powershell Compress-Archive -Path target/${{ matrix.target }}/release/${{ PROJECT_NAME }}.exe -DestinationPath ${{ PROJECT_NAME }}-${{ matrix.target }}.zip
+          powershell Compress-Archive -Path target/${{ matrix.target }}/release/$env:NAMEPROJECT_NAME.exe -DestinationPath $env:NAMEPROJECT_NAME-${{ matrix.target }}.zip
       - name: Package for macOS
         if: matrix.target == 'x86_64-apple-darwin'
         run: |
-          zip --junk-paths ${{ PROJECT_NAME }}-${{ matrix.target }} target/${{ matrix.target }}/release/${{ PROJECT_NAME }}
+          zip --junk-paths $PROJECT_NAME-${{ matrix.target }} target/${{ matrix.target }}/release/$PROJECT_NAME
           
       - uses: actions/upload-artifact@v2
         with:
           name: build-${{ matrix.target }}
-          path: ${{ PROJECT_NAME }}-${{ matrix.target }}.zip
+          path: $PROJECT_NAME-${{ matrix.target }}.zip
 
   draft-release:
     name: Release Draft
@@ -149,6 +149,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.upload-url.outputs.url }}
-          asset_path: ./build-${{ matrix.target }}/${{ PROJECT_NAME }}-${{ matrix.target }}.zip
-          asset_name: ${{ PROJECT_NAME }}-${{ matrix.target }}.zip
+          asset_path: ./build-${{ matrix.target }}/$PROJECT_NAME-${{ matrix.target }}.zip
+          asset_name: $PROJECT_NAME-${{ matrix.target }}.zip
           asset_content_type: application/zip

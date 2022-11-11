@@ -1,14 +1,14 @@
-# We could use `@actions-rs/cargo` Action ability to automatically install `cross` tool
-# in order to compile our application for some unusual targets.
+name: Build_and_Release
 
-on: # [push, pull_request]
+on:
     workflow_dispatch:
 
-name: Build_and_Release
+env:
+  PROJECT_NAME: rust_try_cd
 
 jobs:
   build:
-    name: Build
+  
     strategy:
       matrix:
         target:
@@ -26,7 +26,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     
     steps:
-      - name: Setup code
+      - name: Checkout code
         uses: actions/checkout@v2
 
       - name: Install musl tools
@@ -52,7 +52,7 @@ jobs:
       - name: Package for linux-musl
         if: matrix.target == 'x86_64-unknown-linux-musl'
         run: |
-          zip --junk-paths rust_try_cd-${{ matrix.target }} target/${{ matrix.target }}/release/rust_try_cd
+          zip --junk-paths rust_try_cd-${{ matrix.target }} target/${{ matrix.target }}/release/$PROJECT_NAME
       - name: Package for windows
         if: matrix.target == 'x86_64-pc-windows-msvc'
         run: |

@@ -138,7 +138,7 @@ jobs:
           
       - id: upload-url
         run: |
-          echo "::set-output name=url::$(cat draft-release/release_upload_url.txt)"
+          echo "::set-output name=url::$(cat release/release_upload_url.txt)"
           
       - name: Download packages
         uses: actions/download-artifact@v1

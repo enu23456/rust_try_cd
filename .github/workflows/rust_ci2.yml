@@ -62,21 +62,21 @@ jobs:
         run: |
           zip --junk-paths $PROJECT_NAME-${{ matrix.target }} target/${{ matrix.target }}/release/$PROJECT_NAME
           
-      - uses: actions/upload-artifact@v2
+      - name: Upload packages
+        uses: actions/upload-artifact@v2
         with:
           name: build-${{ matrix.target }}
           path: ${{ env.PROJECT_NAME }}-${{ matrix.target }}.zip
 
-  draft-release:
-    name: Release Draft
+  release:
+  
     needs: [build]
     runs-on: ubuntu-latest
+    
     steps:
-      # Check out current repository
-      - name: Fetch Sources
+      - name: Checkout code
         uses: actions/checkout@v2.3.4
 
-      # Remove old release drafts by using the curl request for the available releases with draft flag
       - name: Remove Old Release Drafts
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -91,15 +91,15 @@ jobs:
         id: version
         run: echo "::set-output name=text::v$(TZ=Asia/Tokyo date +%y%m%d%H%M)"
         
-      - name: Create a draft release
+      - name: Create release
         uses: actions/create-release@v1
-        id: createDraftRelease
+        id: createRelease
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           # tag_name: ${{ github.ref }}_${{ steps.version.outputs.text }}
-          # release_name: Release ${{ github.ref }}_${{ steps.version.outputs.text }}
           tag_name: ${{ steps.version.outputs.text }}
+          # release_name: Release ${{ github.ref }}_${{ steps.version.outputs.text }}
           release_name: Release ${{ steps.version.outputs.text }}
           # body: |
           #   ## Changelog
@@ -107,43 +107,45 @@ jobs:
           draft: true
           prerelease: false
           
-      - name: Save upload url of this draft release.
+      - name: Save upload url of this release.
         run: |
-          echo '${{ steps.createDraftRelease.outputs.upload_url }}' > release_upload_url.txt
+          echo '${{ steps.createRelease.outputs.upload_url }}' > release_upload_url.txt
           
       - name: Upload `release_upload_url.txt`
         uses: actions/upload-artifact@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          name: draft-release
+          name: release_url
           path: release_upload_url.txt
 
-  attach-assets-to-release:
+  attach_to_release:
+  
     strategy:
       matrix:
         target:
           - x86_64-unknown-linux-musl
           - x86_64-pc-windows-msvc
           - x86_64-apple-darwin
-          
-    needs: [build, draft-release]
-    
+    needs: [build, release]
     runs-on: ubuntu-latest
     
     steps:
-      - uses: actions/download-artifact@v1
+      - name: Download url of release.
+        uses: actions/download-artifact@v1
         with:
-          name: draft-release
+          name: release_url
           
       - id: upload-url
         run: |
           echo "::set-output name=url::$(cat draft-release/release_upload_url.txt)"
           
-      - uses: actions/download-artifact@v1
+      - name: Download packages
+        uses: actions/download-artifact@v1
         with:
           name: build-${{ matrix.target }}
 
+      - name: Attach packages to release
       - uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

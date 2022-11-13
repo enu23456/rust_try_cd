@@ -39,7 +39,7 @@ jobs:
         with:
           profile: minimal
           toolchain: stable
-          target: ${{matrix.target}}
+          target: ${{ matrix.target }}
           override: true
           
       - name: Build
@@ -47,12 +47,12 @@ jobs:
         with:
           use-cross: true
           command: build
-          args: --release --target=${{matrix.target}}
+          args: --release --target=${{ matrix.target }}
           
       - name: Package for linux-musl
         if: matrix.target == 'x86_64-unknown-linux-musl'
         run: |
-          zip --junk-paths $PROJECT_NAME-${{matrix.target}} target/${{matrix.target}}/release/$PROJECT_NAME
+          zip --junk-paths $PROJECT_NAME-${{ matrix.target }} target/${{ matrix.target }}/release/$PROJECT_NAME
       - name: Package for windows
         if: matrix.target == 'x86_64-pc-windows-msvc'
         run: |
@@ -68,7 +68,7 @@ jobs:
           name: build-${{ matrix.target }}
           path: ${{ env.PROJECT_NAME }}-${{ matrix.target }}.zip
 
-  release:
+  execute_create-release:
   
     needs: [build_for_attach]
     runs-on: ubuntu-latest
@@ -87,8 +87,8 @@ jobs:
             | xargs -I '{}' \
           curl -X DELETE -H "Authorization: Bearer $GITHUB_TOKEN" https://api.github.com/repos/$GITHUB_REPOSITORY/releases/{}
           
-      - name: Set current time
-        id: version
+      - name: Get current date
+        id: getCurrentDate
         run: echo "::set-output name=text::v$(TZ=Asia/Tokyo date +%y%m%d%H%M)"
         
       - name: Create release
@@ -98,9 +98,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           # tag_name: ${{ github.ref }}_${{ steps.version.outputs.text }}
-          tag_name: ${{ steps.version.outputs.text }}
+          tag_name: ${{ steps.getCurrentDate.outputs.text }}
           # release_name: Release ${{ github.ref }}_${{ steps.version.outputs.text }}
-          release_name: Release ${{ steps.version.outputs.text }}
+          release_name: Release ${{ steps.getCurrentDate.outputs.text }}
           # body: |
           #   ## Changelog
           #   - [ ]
@@ -127,7 +127,7 @@ jobs:
           - x86_64-unknown-linux-musl
           - x86_64-pc-windows-msvc
           - x86_64-apple-darwin
-    needs: [build_for_attach, release]
+    needs: [build_for_attach, execute_create-release]
     runs-on: ubuntu-latest
     
     steps:
@@ -136,7 +136,8 @@ jobs:
         with:
           name: release_url
           
-      - id: upload-url
+      - name: Upload URL
+        id: upload-url
         run: |
           echo "::set-output name=url::$(cat release_url/release_upload_url.txt)"
           

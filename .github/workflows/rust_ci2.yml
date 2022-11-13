@@ -1,13 +1,13 @@
 name: Build_and_Release
 
 on:
-    workflow_dispatch:
+  workflow_dispatch:
 
 env:
   PROJECT_NAME: rust_try_cd
 
 jobs:
-  build:
+  build_for_attach:
   
     strategy:
       matrix:
@@ -23,7 +23,7 @@ jobs:
           - target: x86_64-apple-darwin
             os: macos-latest
             
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{matrix.os}}
     
     steps:
       - name: Checkout code
@@ -39,7 +39,7 @@ jobs:
         with:
           profile: minimal
           toolchain: stable
-          target: ${{ matrix.target }}
+          target: ${{matrix.target}}
           override: true
           
       - name: Build
@@ -47,12 +47,12 @@ jobs:
         with:
           use-cross: true
           command: build
-          args: --release --target=${{ matrix.target }}
+          args: --release --target=${{matrix.target}}
           
       - name: Package for linux-musl
         if: matrix.target == 'x86_64-unknown-linux-musl'
         run: |
-          zip --junk-paths $PROJECT_NAME-${{ matrix.target }} target/${{ matrix.target }}/release/$PROJECT_NAME
+          zip --junk-paths $PROJECT_NAME-${{matrix.target}} target/${{matrix.target}}/release/$PROJECT_NAME
       - name: Package for windows
         if: matrix.target == 'x86_64-pc-windows-msvc'
         run: |
@@ -70,7 +70,7 @@ jobs:
 
   release:
   
-    needs: [build]
+    needs: [build_for_attach]
     runs-on: ubuntu-latest
     
     steps:
@@ -127,7 +127,7 @@ jobs:
           - x86_64-unknown-linux-musl
           - x86_64-pc-windows-msvc
           - x86_64-apple-darwin
-    needs: [build, release]
+    needs: [build_for_attach, release]
     runs-on: ubuntu-latest
     
     steps:

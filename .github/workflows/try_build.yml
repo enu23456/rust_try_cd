@@ -7,7 +7,7 @@ env:
   PROJECT_NAME: rust_try_cd
 
 jobs:
-  build_for_attach:
+  multi-target_build:
   
     strategy:
       matrix:
@@ -49,10 +49,10 @@ jobs:
           command: build
           args: --release --target=${{ matrix.target }}
           
-      - name: Package for linux-musl
+      - name: Check release Directory
         if: matrix.target == 'x86_64-unknown-linux-musl'
         run: |
-          cd target/${{ matrix.target }}/release/
+          ls target/${{ matrix.target }}/release/
       - name: Package for windows
         if: matrix.target == 'x86_64-pc-windows-msvc'
         run: |
@@ -60,5 +60,5 @@ jobs:
       - name: Package for macOS
         if: matrix.target == 'x86_64-apple-darwin'
         run: |
-          cd target/${{ matrix.target }}/release/
+          ls target/${{ matrix.target }}/release/
     
